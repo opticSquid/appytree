@@ -1,4 +1,5 @@
 const user = require("../Schema/user");
+const activeUser = require("../Schema/actieUser");
 /**
  * @description This function is used to find the user either by email or uid
  * @param {string} email -  email of the user
@@ -23,7 +24,27 @@ const findUser = async (required, email = undefined, uid = undefined) => {
     return null;
   }
 };
+/**
+ * @description This function is used to initialte an active session / login session for a user.
+ * @param {string} uid - UID of the user
+ * @param {string} ip - IP of the user
+ * @param {string} ref_tokn - Refresh token of the user
+ * @returns {Promise<boolean>} Boolean value indicating wheather the login session is registered or not.
+ */
+const addActiveUer = async (uid, ip, ref_tokn) => {
+  let newSession = new activeUser({ UID: uid, IP: ip, Ref_Tokn: ref_tokn });
+  newSession.save((err, data) => {
+    if (err) {
+      console.error(err);
+      return false;
+    } else {
+      console.log(data);
+      return true;
+    }
+  });
+};
 
 module.exports = {
   FindUser: findUser,
+  InitiateSession: addActiveUer,
 };

@@ -14,11 +14,6 @@ let userSchema = new Schema({
   password: {
     type: String,
     required: true,
-  },
-  r_token: {
-    type: String,
-    required: true,
-    unique: true,
   }
 });
 
