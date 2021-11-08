@@ -27,8 +27,24 @@ const verifyToken = (token, secret) => {
     return null;
   }
 };
-
+/**
+ * @description Decrypts the incoming token for a request to a protected route.Works as an auth-guard.
+ * @param {object} req - request object
+ * @param {object} res - response object
+ * @param {function} next - next function 
+ */
+const verifyTokenMiddleware = (req,res,next) => {
+  try {
+    let {acs_tkn} = req.headers.authorization.split(" ");
+    let info = verifyToken(acs_tkn[1], process.env.JWT_ACS_SECRET);
+    res.locals.info = info;
+    next();
+  } catch (err) {
+    res.status(401).json({status: "could not resolve token"});
+  }
+};
 module.exports = {
   signJWT: signToken,
   verifyJWT: verifyToken,
+  gateKeeper: verifyTokenMiddleware
 };

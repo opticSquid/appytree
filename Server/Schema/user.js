@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 let userSchema = new Schema({
-  email: {
+  Email: {
     type: String,
     required: true,
     unique: true,
@@ -11,9 +11,14 @@ let userSchema = new Schema({
     required: true,
     unique: true,
   },
-  password: {
+  Password: {
     type: String,
     required: true,
+  },
+  Role: {
+    type: String,
+    required: true,
+    enum: ["Admin", "User"]
   }
 });
 

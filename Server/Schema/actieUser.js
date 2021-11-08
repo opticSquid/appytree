@@ -2,17 +2,17 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 let activeUserSchema = new Schema(
   {
-    uid: {
+    UID: {
       type: String,
       required: true,
       unique: true,
     },
-    r_token: {
+    Ref_Tkn: {
       type: String,
       required: true,
       unique: true,
     },
-    ip: {
+    IP: {
       type: String,
       required: true,
     },

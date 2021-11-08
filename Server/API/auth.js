@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const user = require("../Connections/user");
-const isValidPassword = require("../Helpers/hash").isValidPassword;
-const generateAuthToken = require("../Helpers/jwt").signJWT;
+const hash = require("../Helpers/hash");
+const jwt = require("../Helpers/jwt");
 // Login route
 const findExistingUser = async (req, res, next) => {
   try {
@@ -14,7 +14,7 @@ const findExistingUser = async (req, res, next) => {
       email
     );
     if (!userDetail) return res.status(401).json({ status: "invalid email" });
-    const isMatch = await isValidPassword(userDetail.password, password);
+    const isMatch = await hash.isValidPassword(userDetail.password, password);
     if (!isMatch) {
       return res.status(401).json({ status: "invalid password" });
     } else {
@@ -30,8 +30,17 @@ const startSession = async (req, res, next) => {
   try {
     const { uid } = res.locals.user;
     const ip = req.ip;
-    const r_token = generateAuthToken(uid, ip);
-    const a_token = generateAuthToken(uid, ip, 900);
+    const r_token = jwt.signJWT(
+      { uid: uid, ip: ip },
+      process.env.JWT_REF_SECRET
+    );
+    const a_token = jwt.signJWT(
+      { uid: uid, ip: ip },
+      process.env.JWT_ACS_SECRET,
+      900
+    );
+    r_token = "bearer" + " " + r_token;
+    a_token = "bearer" + " " + a_token;
     const session = await user.InitiateSession(uid, ip, r_token);
     if (session) {
       res.locals.session = { r: r_token, a: a_token };
@@ -50,4 +59,20 @@ const sendResponse = (req, res) => {
   res.status(200).json({ status: "login success", ref_tkn: r, acs_tkn: a });
 };
 router.post("/login", findExistingUser, startSession, sendResponse);
-module.exports = router;
+
+//logout route
+const endSession = async (req, res) => {
+  try {
+    await user.TerminateSessoin(res.locals.info.uid);
+    if (user) {
+      res.status(200).json({ status: "logout success" });
+    } else {
+      res.status(500).json({ status: "cannot process logout request." });
+    }
+  } catch (err) {
+    res.status(500).json({ status: "cannot process logout request." });
+    res.end();
+  }
+};
+router.delete("/logout", jwt.gateKeeper, endSession);
+(module.exports = router), signup;

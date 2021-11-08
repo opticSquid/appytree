@@ -22,19 +22,17 @@ const matchpass = async (passHash, pass) => {
 /**
  * @description Hashes the password.
  * @param {string} pass - Plain text password to hash.
- * @param {*} saltRounds - Number of rounds to hash the password.
- * @returns {string} - The hashed password.
+ * @param {string} saltRounds - Number of rounds to hash the password.
+ * @returns {string} The hashed password.
  */
 const createHash = async (pass, saltRounds) => {
-  bcrypt.hash(pass, saltRounds, (err, hash) => {
-    if (err) {
-      console.log(err);
-      return null;
-    } else {
-      console.log(hash);
-      return hash;
-    }
-  });
+  try {
+    let hash = await bcrypt.hash(pass, saltRounds);
+    return hash;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
 };
 
 module.exports = { isValidPassword: matchpass, hashPassword: createHash };
