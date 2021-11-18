@@ -28,21 +28,20 @@ const addUser = async (email, uid, password, role) => {
  * @description This function is used to find the user either by email or uid
  * @param {string} email -  email of the user
  * @param {string} uid - uid of the user
- * @param {object} required - object of the required fields
- * @returns {Promise<{email:string,uid:string,password:string,r_token:string}>} Details of the users account
+ * @param {Object} required - object of the required fields
+ * @returns {Promise<{Email:string,uid:string,Password:string,Role:string}>} Details of the users account
  */
-const findUser = async (required, email = undefined, uid = undefined) => {
+const findUser = async (
+  email = undefined,
+  uid = undefined,
+  required = undefined
+) => {
+  let project = required === undefined ? { __v: 0 } : { __v: 0, ...required };
   if (uid === undefined && email !== undefined) {
-    const userDetail = await user.findOne(
-      { Email: email },
-      { _id: 0, __v: 0, ...required }
-    );
+    const userDetail = await user.findOne({ Email: email }, project);
     return userDetail;
   } else if (email === undefined && uid !== undefined) {
-    const userDetail = await user.findOne(
-      { uid: uid },
-      { _id: 0, __v: 0, ...required }
-    );
+    const userDetail = await user.findOne({ uid: uid }, project);
     return userDetail;
   } else {
     return null;

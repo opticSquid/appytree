@@ -5,19 +5,9 @@ const bcrypt = require("bcrypt");
  * @param {string} pass - The plain text password to check against the hash
  * @returns {boolean} True if the password matches the hash, false otherwise
  */
-const matchpass = async (passHash, pass) => {
-  let result;
-  bcrypt.compare(pass, passHash, (err, compareResult) => {
-    if (err) {
-      console.log(err);
-      result = false;
-      return result;
-    } else {
-      result = true;
-      console.log(compareResult);
-      return result;
-    }
-  });
+const matchpass = async (pass, passHash) => {
+  let result = await bcrypt.compare(pass, passHash);
+  return result;
 };
 /**
  * @description Hashes the password.

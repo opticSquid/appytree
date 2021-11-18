@@ -4,13 +4,31 @@ const jwt = require("jsonwebtoken");
  * @param {string} payload - payload to be signed
  * @param {strig} secret - secret key
  * @param {string} expiry - expiry time
- * @returns {string} signed token
+ * @returns {Promise<String>} signed token
  */
 const signToken = (payload, secret, expiry = undefined) => {
   if (expiry === undefined) {
-    return jwt.sign(payload, secret);
+    return new Promise((resolve, reject) => {
+      jwt.sign(payload, secret, (err, token) => {
+        if (err) {
+          console.error(err);
+          return reject(undefined);
+        }
+        console.log(token);
+        return resolve(token);
+      });
+    });
   } else {
-    return jwt.sign(payload, secret, { expiresIn: expiry });
+    return new Promise((resolve, reject) => {
+      jwt.sign(payload, secret, { expiresIn: expiry }, (err, token) => {
+        if (err) {
+          console.error(err);
+          return reject(undefined);
+        }
+        console.log(token);
+        return resolve(token);
+      });
+    });
   }
 };
 
@@ -18,33 +36,38 @@ const signToken = (payload, secret, expiry = undefined) => {
  * @description Verifies a token given a secret.
  * @param {string} token - token to be verified
  * @param {string} secret - secret key
- * @returns {object} decoded token
+ * @returns {Promise<{uid:String,ip:String,role?:String,time?:String}>} decoded token
  */
 const verifyToken = (token, secret) => {
-  try {
-    return jwt.verify(token, secret);
-  } catch {
-    return null;
-  }
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, secret, (err, decoded) => {
+      if (err) {
+        console.error(err);
+        return reject(undefined);
+      }
+      console.log(decoded);
+      return resolve(decoded);
+    });
+  });
 };
 /**
  * @description Decrypts the incoming token for a request to a protected route.Works as an auth-guard.
  * @param {object} req - request object
  * @param {object} res - response object
- * @param {function} next - next function 
+ * @param {function} next - next function
  */
-const verifyTokenMiddleware = (req,res,next) => {
+const verifyTokenMiddleware = async (req, res, next) => {
   try {
-    let {acs_tkn} = req.headers.authorization.split(" ");
-    let info = verifyToken(acs_tkn[1], process.env.JWT_ACS_SECRET);
+    let { acs_tkn } = req.headers.authorization.split(" ");
+    let info = await verifyToken(acs_tkn[1], process.env.JWT_ACS_SECRET);
     res.locals.info = info;
     next();
   } catch (err) {
-    res.status(401).json({status: "could not resolve token"});
+    res.status(401).json({ status: "could not resolve token" });
   }
 };
 module.exports = {
   signJWT: signToken,
   verifyJWT: verifyToken,
-  gateKeeper: verifyTokenMiddleware
+  gateKeeper: verifyTokenMiddleware,
 };

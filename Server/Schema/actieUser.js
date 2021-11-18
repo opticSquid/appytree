@@ -5,7 +5,6 @@ let activeUserSchema = new Schema(
     UID: {
       type: String,
       required: true,
-      unique: true,
     },
     Ref_Tkn: {
       type: String,
@@ -15,6 +14,7 @@ let activeUserSchema = new Schema(
     IP: {
       type: String,
       required: true,
+      unique: true,
     },
   },
   { timestamps: true }

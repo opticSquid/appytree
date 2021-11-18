@@ -6,15 +6,11 @@ const jwt = require("../Helpers/jwt");
 const findExistingUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const userDetail = await user.FindUser(
-      {
-        password: 1,
-        uid: 1,
-      },
-      email
-    );
+    console.log("Email: ", email, "\nPassword: ", password);
+    const userDetail = await user.FindUser(email, undefined, { _id: 0 });
     if (!userDetail) return res.status(401).json({ status: "invalid email" });
-    const isMatch = await hash.isValidPassword(userDetail.password, password);
+    const isMatch = await hash.isValidPassword(password, userDetail.Password);
+    console.log("isMatch: ", isMatch);
     if (!isMatch) {
       return res.status(401).json({ status: "invalid password" });
     } else {
@@ -28,19 +24,20 @@ const findExistingUser = async (req, res, next) => {
 };
 const startSession = async (req, res, next) => {
   try {
-    const { uid } = res.locals.user;
+    const { uid, Role } = res.locals.user;
+    console.log("Local variable User: \n", res.locals.user);
     const ip = req.ip;
-    const r_token = jwt.signJWT(
-      { uid: uid, ip: ip },
+    let r_token = await jwt.signJWT(
+      { uid: uid, ip: ip, role: Role, time: Date.now().toString() },
       process.env.JWT_REF_SECRET
     );
-    const a_token = jwt.signJWT(
+    let a_token = await jwt.signJWT(
       { uid: uid, ip: ip },
       process.env.JWT_ACS_SECRET,
       900
     );
-    r_token = "bearer" + " " + r_token;
-    a_token = "bearer" + " " + a_token;
+    r_token = "Bearer" + " " + r_token;
+    a_token = "Bearer" + " " + a_token;
     const session = await user.InitiateSession(uid, ip, r_token);
     if (session) {
       res.locals.session = { r: r_token, a: a_token };
@@ -50,6 +47,7 @@ const startSession = async (req, res, next) => {
       res.end();
     }
   } catch (error) {
+    console.error(error);
     res.status(500).json({ status: "cannot process login request." });
     res.end();
   }
@@ -75,4 +73,4 @@ const endSession = async (req, res) => {
   }
 };
 router.delete("/logout", jwt.gateKeeper, endSession);
-(module.exports = router), signup;
+module.exports = router;
