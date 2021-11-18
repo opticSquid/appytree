@@ -25,7 +25,7 @@ const addUser = async (email, uid, password, role) => {
 };
 
 /**
- * @description This function is used to find the user either by email or uid
+ * @description This function is used to find the user either by email or uid.
  * @param {string} email -  email of the user
  * @param {string} uid - uid of the user
  * @param {Object} required - object of the required fields
@@ -41,7 +41,7 @@ const findUser = async (
     const userDetail = await user.findOne({ Email: email }, project);
     return userDetail;
   } else if (email === undefined && uid !== undefined) {
-    const userDetail = await user.findOne({ uid: uid }, project);
+    const userDetail = await activeUser.findOne({ uid: uid }, project);
     return userDetail;
   } else {
     return null;
@@ -56,7 +56,7 @@ const findUser = async (
  */
 const addActiveUer = async (uid, ip, ref_tokn) => {
   try {
-    let newSession = new activeUser({ UID: uid, IP: ip, Ref_Tkn: ref_tokn });
+    let newSession = new activeUser({ uid: uid, IP: ip, Ref_Tkn: ref_tokn });
     await newSession.save();
     return true;
   } catch (err) {
@@ -70,18 +70,7 @@ const addActiveUer = async (uid, ip, ref_tokn) => {
  * @returns {Promise<boolean>} Boolean value indicating wheather the active session is deleted or not.
  */
 const deleteActiveUser = async (uid) => {
-  let newSession = await activeUser.findOneAndDelete(
-    { UID: uid },
-    (err, data) => {
-      if (err) {
-        console.error(err);
-        return false;
-      } else {
-        console.log(data);
-        return true;
-      }
-    }
-  );
+  let newSession = await activeUser.findOneAndDelete({ uid: uid });
   return newSession;
 };
 

@@ -38,7 +38,7 @@ const verifyToken = (token, secret) => {
         console.error(err);
         return reject(undefined);
       }
-      console.log(decoded);
+      console.log("Decoded Token: ", decoded);
       return resolve(decoded);
     });
   });
@@ -51,11 +51,13 @@ const verifyToken = (token, secret) => {
  */
 const verifyTokenMiddleware = async (req, res, next) => {
   try {
-    let { acs_tkn } = req.headers.authorization.split(" ");
+    let acs_tkn = req.headers.authorization.split(" ");
     let info = await verifyToken(acs_tkn[1], process.env.JWT_ACS_SECRET);
+    console.log("Active user info: ", info);
     res.locals.info = info;
     next();
   } catch (err) {
+    console.error(err);
     res.status(401).json({ status: "could not resolve token" });
   }
 };
