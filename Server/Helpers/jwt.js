@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const signCallback = (req, res) => {};
 /**
  * @description Generates a token given a payload and a secret.The expiry time parameter is optional.
  * @param {string} payload - payload to be signed
@@ -7,29 +8,21 @@ const jwt = require("jsonwebtoken");
  * @returns {Promise<String>} signed token
  */
 const signToken = (payload, secret, expiry = undefined) => {
-  if (expiry === undefined) {
-    return new Promise((resolve, reject) => {
-      jwt.sign(payload, secret, (err, token) => {
-        if (err) {
-          console.error(err);
-          return reject(undefined);
-        }
-        console.log(token);
-        return resolve(token);
-      });
-    });
-  } else {
-    return new Promise((resolve, reject) => {
-      jwt.sign(payload, secret, { expiresIn: expiry }, (err, token) => {
-        if (err) {
-          console.error(err);
-          return reject(undefined);
-        }
-        console.log(token);
-        return resolve(token);
-      });
-    });
-  }
+  return new Promise((resolve, reject) => {
+    const signCallback = (err, token) => {
+      if (err) {
+        console.error(err);
+        return reject(undefined);
+      }
+      return resolve(token);
+    };
+    if (expiry === undefined) {
+      // Callback function for both the calls.
+      jwt.sign(payload, secret, signCallback);
+    } else {
+      jwt.sign(payload, secret, { expiresIn: expiry }, signCallback);
+    }
+  });
 };
 
 /**

@@ -27,17 +27,16 @@ const startSession = async (req, res, next) => {
     const { uid, Role } = res.locals.user;
     console.log("Local variable User: \n", res.locals.user);
     const ip = req.ip;
-    let r_token = await jwt.signJWT(
-      { uid: uid, ip: ip, role: Role, time: Date.now().toString() },
-      process.env.JWT_REF_SECRET
-    );
-    let a_token = await jwt.signJWT(
-      { uid: uid, ip: ip },
-      process.env.JWT_ACS_SECRET,
-      900
-    );
-    r_token = "Bearer" + " " + r_token;
-    a_token = "Bearer" + " " + a_token;
+    // Parallalizing two independent async calls for speed.
+    let tokens = await Promise.all([
+      jwt.signJWT(
+        { uid: uid, ip: ip, role: Role, time: Date.now().toString() },
+        process.env.JWT_REF_SECRET
+      ),
+      jwt.signJWT({ uid: uid, ip: ip }, process.env.JWT_ACS_SECRET, 900),
+    ]);
+    r_token = "Bearer" + " " + tokens[0];
+    a_token = "Bearer" + " " + tokens[1];
     const session = await user.InitiateSession(uid, ip, r_token);
     if (session) {
       res.locals.session = { r: r_token, a: a_token };
