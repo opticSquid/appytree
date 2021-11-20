@@ -1,12 +1,45 @@
 import Head from "next/head";
 import { EyeIcon, EyeOffIcon } from "@heroicons/react/outline";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 export default function Home() {
   const [passHidden, setPasshidden] = useState(true);
   const [logincred, setLogincred] = useState({ email: "", password: "" });
+  const router = useRouter();
   const setValue = (e) => {
     setLogincred({ ...logincred, [e.target.name]: e.target.value });
+  };
+  /**
+   *
+   * @param {String} word - Normmal String
+   * @returns {String} String changed to title Case.
+   */
+  const capitalize = ([first, ...rest]) => {
+    return first.toUpperCase() + rest.join("");
+  };
+  const submitCred = async (e) => {
+    e.preventDefault();
+    const response = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(logincred),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    try {
+      const data = await response.json();
+      console.log(data);
+      if (response.status >= 400) {
+        alert(capitalize(data.status));
+      } else {
+        localStorage.setItem("acs_tkn", data.acs_tkn);
+        localStorage.setItem("ref_tkn", data.ref_tkn);
+        router.push("/home");
+      }
+    } catch (err) {
+      alert("Cannot login. Ensure you have an active internet connection.");
+    }
   };
   return (
     <div>
@@ -76,12 +109,9 @@ export default function Home() {
             )}
           </button>
           <button
-            className="text-lg bg-blue-500 text-white rounded py-2 px-4 inline-flex items-center hover:bg-blue-300"
+            className="text-2xl bg-gray-800 text-white rounded py-2 px-4 inline-flex items-center hover:bg-blue-300"
             type="submit"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log(logincred);
-            }}
+            onClick={submitCred}
           >
             <span className="pr-2">Login</span>
           </button>
